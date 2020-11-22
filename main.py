@@ -1,1 +1,1 @@
-print('hello world!')
+nie mam pomyslu
