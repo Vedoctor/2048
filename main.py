@@ -4,7 +4,7 @@ WIDTH = 500
 HEIGHT = 500
 
 blocks = []
-
+size = 4
 
 def draw():
     screen.fill('black')
@@ -47,8 +47,11 @@ def on_key_down(key):
 
 def add_block():
     block = Actor('2048_2')
-    block.posx = random.randint(1, 4)
-    block.posy = random.randint(1, 4)
+    posx = 0
+    while posx == 0:
+        posx, posy = get_available_spot()
+    block.posx = posx
+    block.posy = posy
     rnd = random.randint(0, 100)
     if rnd < 20:
         block.value = 4
@@ -57,20 +60,34 @@ def add_block():
     blocks.append(block)
 
 
+def get_available_spot():
+    posx = random.randint(1, 4)
+    posy = random.randint(1, 4)
+    for block in blocks:
+        if block.posx == posx and block.posy == posy:
+            return 0, 0
+    return posx, posy
+
+
 def update():
     for block in blocks:
-        block_pos(block, block.posx, block.posy)
+        block.x = block.posx * 100
+        block.y = block.posy * 100
 
+    if len(blocks) == pow(size, 2):
+        sys.exit()
 
-def block_pos(block, posx, posy):
-    block.x = posx * 100
-    block.y = posy * 100
 
 
 def move_left():
-    for block in blocks:
-        if block.posx != 1:
-            block.posx -= 1
+    for i in range(size):
+        for block in blocks:
+            action = can_move(block, 'left')
+            if action == 'move' and block.posx != 1:
+                block.posx -= 1
+            elif action == 'merge':
+                block.value += block.value
+                block.posx -= 1
     add_block()
 
 
@@ -95,8 +112,29 @@ def move_down():
     add_block()
 
 
+def can_move(block, dir):
+    posx = block.posx
+    posy = block.posy
+    for block2 in blocks:
+        if block2.posx == posx - 1 and block2.posy == posy:
+            if block2.value == block.value:
+                blocks.remove(block2)
+                return 'merge'
+            return 'nomerge'
+    return 'move'
 
-add_block()
-add_block()
 
+def add_first_blocks():
+    block = Actor('2048_2')
+    block.posx = random.randint(1, 4)
+    block.posy = random.randint(1, 4)
+    rnd = random.randint(0, 100)
+    if rnd < 20:
+        block.value = 4
+    else:
+        block.value = 2
+    blocks.append(block)
+
+
+add_first_blocks()
 pg.go()
